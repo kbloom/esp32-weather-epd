@@ -20,6 +20,7 @@
 #include "provider/OpenMeteoProvider.h"
 #include "_locale.h"
 #include "aqi.h"
+#include "display_utils.h" // For getHttpResponsePhrase
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 
@@ -43,8 +44,6 @@ int OpenMeteoProvider::fetchWeatherData(WeatherData &data)
 
     JsonDocument doc;
 
-    {
-        HTTPClient http;
         String server = "api.open-meteo.com";
         String url = String("/v1/forecast?") +
                     "latitude=" + LAT + "&longitude=" + LON +
@@ -57,18 +56,34 @@ int OpenMeteoProvider::fetchWeatherData(WeatherData &data)
                     "&forecast_days=" + MAX_DAILY_FORECASTS +
                     "&timeformat=unixtime&timezone=auto";
 
+    int attempts = 0;
+
+    String payload;
+    HTTPClient http;
+    int httpCode;
+    bool success=false;
+    do {
+        Serial.print(TXT_ATTEMPTING_HTTP_REQ);
+        Serial.println(": " + url);
         http.begin(wifi_client, server, PORT, url, true);
 
-        int httpCode = http.GET();
-        if (httpCode != HTTP_CODE_OK) return httpCode;
+        httpCode = http.GET();
+        if (httpCode == HTTP_CODE_OK) {
+            success = true;
+            payload = http.getString();
+        }
 
-        String payload = http.getString();
         // Serial.println(url);
         // Serial.println(payload);
         http.end();
+        Serial.println("  " + String(httpCode, DEC) + " " + getHttpResponsePhrase(httpCode));
 
-        deserializeJson(doc, payload);
+    } while (!success && attempts < 3);
+    if (httpCode != HTTP_CODE_OK) {
+        return httpCode;
     }
+
+    deserializeJson(doc, payload);
 
     JsonObject current = doc["current"];
     JsonObject daily = doc["daily"];
