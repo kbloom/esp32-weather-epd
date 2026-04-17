@@ -15,7 +15,7 @@
  */
 
 #include "config.h"
-#ifdef USE_PROVIDER_OPENMETEO
+#if defined(USE_PROVIDER_OPENMETEO) || defined(USE_PROVIDER_OPENMETEO_NWS_ALERTS)
 
 #include "provider/OpenMeteoProvider.h"
 #include "_locale.h"

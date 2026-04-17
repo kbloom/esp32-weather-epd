@@ -22,6 +22,7 @@
 // Include headers for all available concrete providers here
 #include "provider/OpenWeatherMapProvider.h"
 #include "provider/OpenMeteoProvider.h"
+#include "provider/OpenMeteoWithNwsAlerts.h"
 
 WeatherProvider* WeatherProviderFactory::createProvider(WiFiClient &wifiClient) {
 #if defined(USE_PROVIDER_OPENWEATHERMAP)
@@ -30,5 +31,7 @@ WeatherProvider* WeatherProviderFactory::createProvider(WiFiClient &wifiClient) 
 #elif defined(USE_PROVIDER_OPENMETEO)
     // DWD provider is configured
     return new OpenMeteoProvider(wifiClient);
+#elif defined(USE_PROVIDER_OPENMETEO_NWS_ALERTS)
+    return new OpenMeteoWithNwsAlerts(wifiClient);
 #endif
 }

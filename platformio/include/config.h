@@ -36,6 +36,7 @@
 //   calls.
 #define USE_PROVIDER_OPENWEATHERMAP
 // #define USE_PROVIDER_OPENMETEO
+// #define USE_PROVIDER_OPENMETEO_NWS_ALERTS
 
 // E-PAPER PANEL
 // This project supports the following E-Paper panels:
