@@ -637,85 +637,172 @@ const uint8_t *getConditionsBitmap(int wmo_code, bool day, bool moon, bool cloud
 {
   switch (wmo_code)
   {
-    case 0: // Clear         clear sky                        01d 01n
+    case 0: // Clear sky
       if (windy)                            {return getBitmap(wi_strong_wind, BitmapSize);}
       if (!day && moon)                     {return getBitmap(wi_night_clear, BitmapSize);}
       if (!day && !moon)                    {return getBitmap(wi_stars, BitmapSize);}
       return getBitmap(wi_day_sunny, BitmapSize);
-    case 1: // Clouds        few clouds: 11-25%               02d 02n
+    case 1: // Few clouds: 11-25%
       if (windy)                            {return getBitmap(wi_strong_wind, BitmapSize);}
       if (!day && moon)                     {return getBitmap(wi_night_alt_partly_cloudy, BitmapSize);}
       if (!day && !moon)                    {return getBitmap(wi_stars, BitmapSize);}
       return getBitmap(wi_day_sunny_overcast, BitmapSize);
-    case 2: // Clouds        scattered clouds: 25-50%         03d 03n
+    case 2: // Scattered clouds: 25-50%
       if (windy && day)                     {return getBitmap(wi_day_cloudy_gusts, BitmapSize);}
       if (windy && !day && moon)            {return getBitmap(wi_night_alt_cloudy_gusts, BitmapSize);}
       if (windy && !day && !moon)           {return getBitmap(wi_cloudy_gusts, BitmapSize);}
       if (!day && moon)                     {return getBitmap(wi_night_alt_cloudy, BitmapSize);}
       if (!day && !moon)                    {return getBitmap(wi_cloud, BitmapSize);}
       return getBitmap(wi_day_cloudy, BitmapSize);
-    case 3: // Clouds        overcast clouds: 85-100%         04d 04n
+    case 3: // Overcast clouds: 85-100%
       if (windy)                            {return getBitmap(wi_cloudy_gusts, BitmapSize);}
       return getBitmap(wi_cloudy, BitmapSize);
-    case 45: // Fog           fog                              50d
+    case 4: // Smoke
+      return getBitmap(wi_smoke, BitmapSize);
+    case 5: // Haze
+      if (day && !cloudy)                   {return getBitmap(wi_day_haze, BitmapSize);}
+      return getBitmap(wi_dust, BitmapSize);
+    case 6: // Widespread dust
+    case 7: // Dust or sand raised by wind
+    case 8: // Dust or sand whirls
+      return getBitmap(wi_dust, BitmapSize);
+    case 9: // Duststorm or sandstorm
+    case 30: // Duststorm or sandstorm
+    case 31: // Duststorm or sandstorm
+    case 32: // Duststorm or sandstorm
+    case 33: // Severe duststorm or sandstorm
+    case 34: // Severe duststorm or sandstorm
+    case 35: // Severe duststorm or sandstorm
+      return getBitmap(wi_sandstorm, BitmapSize);
+    case 10: // Mist
+    case 11: // Patches of shallow fog
+    case 12: // Continuous shallow fog
+    case 28: // Fog or ice fog in preceding hour
+    case 40: // Fog at distance
+    case 41: // Fog in patches
+    case 42: // Fog, sky visible, thinning
+    case 43: // Fog, sky invisible, thinning
+    case 44: // Fog, sky visible, no change
+    case 45: // Fog, sky invisible, no change
+    case 46: // Fog, sky visible, thickening
+    case 47: // Fog, sky invisible, thickening
+    case 48: // Fog, depositing rime, sky visible
+    case 49: // Fog, depositing rime, sky invisible
       if (!cloudy && day)                   {return getBitmap(wi_day_fog, BitmapSize);}
       if (!cloudy && !day && moon)          {return getBitmap(wi_night_fog, BitmapSize);}
       return getBitmap(wi_fog, BitmapSize);
-    case 48: // Mist          mist                             50d
-      if (!cloudy && day)                   {return getBitmap(wi_day_fog, BitmapSize);}
-      if (!cloudy && !day && moon)          {return getBitmap(wi_night_fog, BitmapSize);}
-      return getBitmap(wi_fog, BitmapSize);
-    case 51: // Drizzle       light intensity drizzle          09d
-    case 53: // Drizzle       drizzle                          09d
-    case 55: // Drizzle       heavy intensity drizzle          09d
-    case 56: // Drizzle       heavy shower rain and drizzle    09d
-    case 57: // Drizzle       shower drizzle                   09d
+    case 13: // Lightning visible, no thunder heard
+      if (day)                              {return getBitmap(wi_day_lightning, BitmapSize);}
+      if (!day && moon)                     {return getBitmap(wi_night_alt_lightning, BitmapSize);}
+      return getBitmap(wi_lightning, BitmapSize);
+    case 14: // Virga
+      return getBitmap(wi_cloud, BitmapSize);
+    case 15: // Precipitation distant
+    case 16: // Precipitation near
+    case 25: // Showers of rain in preceding hour
+    case 80: // Rain shower(s), slight
+    case 81: // Rain shower(s), moderate or heavy
+    case 82: // Rain shower(s), violent
       if (!cloudy && day)                   {return getBitmap(wi_day_showers, BitmapSize);}
       if (!cloudy && !day && moon)          {return getBitmap(wi_night_alt_showers, BitmapSize);}
       return getBitmap(wi_showers, BitmapSize);
-    case 61: // Rain          light rain                       10d
-    case 62: // Rain          moderate rain                    10d
-    case 63: // Rain          heavy intensity rain             10d
+    case 17: // Thunderstorm, no precipitation
+    case 29: // Thunderstorm in preceding hour
+    case 91: // Slight rain, TS in preceding hour
+    case 92: // Moderate/heavy rain, TS in preceding hour
+    case 95: // Thunderstorm, slight or moderate
+    case 97: // Thunderstorm, heavy
+    case 98: // Thunderstorm with duststorm
+      if (!cloudy && day)                   {return getBitmap(wi_day_thunderstorm, BitmapSize);}
+      if (!cloudy && !day && moon)          {return getBitmap(wi_night_alt_thunderstorm, BitmapSize);}
+      return getBitmap(wi_thunderstorm, BitmapSize);
+    case 18: // Squalls
+      if (day)                              {return getBitmap(wi_day_cloudy_gusts, BitmapSize);}
+      if (!day && moon)                     {return getBitmap(wi_night_alt_cloudy_gusts, BitmapSize);}
+      return getBitmap(wi_cloudy_gusts, BitmapSize);
+    case 19: // Funnel cloud (Tornado)
+      return getBitmap(wi_tornado, BitmapSize);
+    case 20: // Drizzle in preceding hour
+    case 50: // Drizzle, intermittent slight
+    case 51: // Drizzle, continuous slight
+    case 52: // Drizzle, intermittent moderate
+    case 53: // Drizzle, continuous moderate
+    case 54: // Drizzle, intermittent heavy
+    case 55: // Drizzle, continuous heavy
+      if (!cloudy && day)                   {return getBitmap(wi_day_sprinkle, BitmapSize);}
+      if (!cloudy && !day && moon)          {return getBitmap(wi_night_alt_sprinkle, BitmapSize);}
+      return getBitmap(wi_sprinkle, BitmapSize);
+    case 21: // Rain in preceding hour
+    case 58: // Drizzle and rain, slight
+    case 59: // Drizzle and rain, moderate/heavy
+    case 60: // Rain, intermittent slight
+    case 61: // Rain, continuous slight
+    case 62: // Rain, intermittent moderate
+    case 63: // Rain, continuous moderate
+    case 64: // Rain, intermittent heavy
+    case 65: // Rain, continuous heavy
       if (!cloudy && day && windy)          {return getBitmap(wi_day_rain_wind, BitmapSize);}
       if (!cloudy && day)                   {return getBitmap(wi_day_rain, BitmapSize);}
       if (!cloudy && !day && moon && windy) {return getBitmap(wi_night_alt_rain_wind, BitmapSize);}
       if (!cloudy && !day && moon)          {return getBitmap(wi_night_alt_rain, BitmapSize);}
       if (windy)                            {return getBitmap(wi_rain_wind, BitmapSize);}
       return getBitmap(wi_rain, BitmapSize);
-    case 66: // Rain          freezing rain                    13d
-    case 67: // Rain          freezing rain                    13d    if (!cloudy) {return wi_day_rain_mix_64x64;}
-      if (!cloudy && day)                   {return getBitmap(wi_day_rain_mix, BitmapSize);}
-      if (!cloudy && !day && moon)          {return getBitmap(wi_night_alt_rain_mix, BitmapSize);}
-      return getBitmap(wi_rain_mix, BitmapSize);
-    case 71: // Snow          light snow                       13d
-    case 73: // Snow          Snow                             13d
-    case 75: // Snow          Heavy snow                       13d
+    case 22: // Snow in preceding hour
+    case 36: // Slight/mod blowing snow, low
+    case 37: // Heavy drifting snow
+    case 38: // Slight/mod blowing snow, high
+    case 39: // Heavy drifting snow
+    case 70: // Snowflakes, intermittent slight
+    case 71: // Snowflakes, continuous slight
+    case 72: // Snowflakes, intermittent moderate
+    case 73: // Snowflakes, continuous moderate
+    case 74: // Snowflakes, intermittent heavy
+    case 75: // Snowflakes, continuous heavy
+    case 85: // Snow shower(s), slight
+    case 86: // Snow shower(s), moderate or heavy
       if (!cloudy && day && windy)          {return getBitmap(wi_day_snow_wind, BitmapSize);}
       if (!cloudy && day)                   {return getBitmap(wi_day_snow, BitmapSize);}
       if (!cloudy && !day && moon && windy) {return getBitmap(wi_night_alt_snow_wind, BitmapSize);}
       if (!cloudy && !day && moon)          {return getBitmap(wi_night_alt_snow, BitmapSize);}
       if (windy)                            {return getBitmap(wi_snow_wind, BitmapSize);}
       return getBitmap(wi_snow, BitmapSize);
-    case 77: // Snow          light snow                       13d
-      if (!cloudy && day)                   {return getBitmap(wi_day_sleet, BitmapSize);}
-      if (!cloudy && !day && moon)          {return getBitmap(wi_night_alt_sleet, BitmapSize);}
-      return getBitmap(wi_sleet, BitmapSize);
-    case 80: // Rain          light intensity shower rain      09d
-    case 81: // Rain          shower rain                      09d
-    case 82: // Rain          heavy intensity shower rain      09d
-      if (!cloudy && day)                   {return getBitmap(wi_day_showers, BitmapSize);}
-      if (!cloudy && !day && moon)          {return getBitmap(wi_night_alt_showers, BitmapSize);}
-      return getBitmap(wi_showers, BitmapSize);
-    case 85: // Snow          Light rain and snow              13d
-    case 86: // Snow          Rain and snow                    13d
+    case 23: // Rain and snow in preceding hour
+    case 26: // Shower(s) of snow or rain and snow in preceding hour
+    case 68: // Rain/drizzle and snow, slight
+    case 69: // Rain/drizzle and snow, moderate/heavy
+    case 83: // Shower(s) of rain and snow mixed, slight
+    case 84: // Shower(s) of rain and snow mixed, mod/heavy
       if (!cloudy && day)                   {return getBitmap(wi_day_rain_mix, BitmapSize);}
       if (!cloudy && !day && moon)          {return getBitmap(wi_night_alt_rain_mix, BitmapSize);}
       return getBitmap(wi_rain_mix, BitmapSize);
-    case 95: // Thunderstorm  thunderstorm with light rain     11d
-      if (!cloudy && day)                   {return getBitmap(wi_day_thunderstorm, BitmapSize);}
-      if (!cloudy && !day && moon)          {return getBitmap(wi_night_alt_thunderstorm, BitmapSize);}
-      return getBitmap(wi_thunderstorm, BitmapSize);
-    case 96: // Thunderstorm  thunderstorm with heavy drizzle  11d
+    case 24: // Freezing drizzle/rain in preceding hour
+    case 56: // Drizzle, freezing, slight
+    case 57: // Drizzle, freezing, mod/heavy
+    case 66: // Rain, freezing, slight
+    case 67: // Rain, freezing, mod/heavy
+      if (!cloudy && day)                   {return getBitmap(wi_day_rain_mix, BitmapSize);}
+      if (!cloudy && !day && moon)          {return getBitmap(wi_night_alt_rain_mix, BitmapSize);}
+      return getBitmap(wi_rain_mix, BitmapSize);
+    case 27: // Shower(s) of hail in preceding hour
+    case 87: // Shower(s) of snow pellets / small hail, slight
+    case 88: // Shower(s) of snow pellets / small hail, mod/heavy
+    case 89: // Shower(s) of hail, slight
+    case 90: // Shower(s) of hail, mod/heavy
+    case 93: // Slight snow/rain+snow/hail, TS in preceding hour
+    case 94: // Mod/heavy snow/rain+snow/hail, TS in preceding hour
+      if (!cloudy && day)                   {return getBitmap(wi_day_hail, BitmapSize);}
+      if (!cloudy && !day && moon)          {return getBitmap(wi_night_alt_hail, BitmapSize);}
+      return getBitmap(wi_hail, BitmapSize);
+    case 77: // Snow grains
+    case 79: // Ice pellets
+      if (!cloudy && day)                   {return getBitmap(wi_day_sleet, BitmapSize);}
+      if (!cloudy && !day && moon)          {return getBitmap(wi_night_alt_sleet, BitmapSize);}
+      return getBitmap(wi_sleet, BitmapSize);
+    case 76: // Diamond dust
+    case 78: // Isolated star-like snow crystals
+      return getBitmap(wi_snowflake_cold, BitmapSize);
+    case 96: // Thunderstorm, slight or moderate, with hail
+    case 99: // Thunderstorm, heavy, with hail
       if (!cloudy && day)                   {return getBitmap(wi_day_storm_showers, BitmapSize);}
       if (!cloudy && !day && moon)          {return getBitmap(wi_night_alt_storm_showers, BitmapSize);}
       return getBitmap(wi_storm_showers, BitmapSize);
