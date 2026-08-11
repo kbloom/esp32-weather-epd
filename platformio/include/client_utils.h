@@ -32,6 +32,5 @@ void killWiFi();
 bool waitForSNTPSync(tm *timeInfo);
 bool printLocalTime(tm *timeInfo);
 
-int httpGetWithRetry(WiFiClient &wifiClient, const String &host, uint16_t port, const String &uri, String &payload, const String &displayUri = "");
 int httpGetWithRetry(WiFiClient &wifiClient, const String &host, uint16_t port, const String &uri, std::function<DeserializationError(WiFiClient &stream)> deserializer, const String &displayUri = "");
 

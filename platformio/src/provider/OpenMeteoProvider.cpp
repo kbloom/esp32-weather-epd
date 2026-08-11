@@ -56,13 +56,12 @@ int OpenMeteoProvider::fetchWeatherData(WeatherData &data)
                     "&forecast_days=" + MAX_DAILY_FORECASTS +
                     "&timeformat=unixtime&timezone=auto";
 
-    String payload;
-    int httpCode = httpGetWithRetry(wifi_client, server, PORT, url, payload);
+    int httpCode = httpGetWithRetry(wifi_client, server, PORT, url, [&doc](WiFiClient &stream) {
+        return deserializeJson(doc, stream);
+    });
     if (httpCode != HTTP_CODE_OK) {
         return httpCode;
     }
-
-    deserializeJson(doc, payload);
 
     JsonObject current = doc["current"];
     JsonObject daily = doc["daily"];
@@ -155,12 +154,11 @@ int OpenMeteoProvider::fetchWeatherData(WeatherData &data)
                         "&past_days=1" +
                         "&timeformat=unixtime&timezone=auto";
 
-        String aq_payload;
-        int httpCode = httpGetWithRetry(wifi_client, server, PORT, url, aq_payload);
-        if (httpCode != HTTP_CODE_OK) return httpCode;
-
         doc.clear(); // Clear the document before reusing
-        deserializeJson(doc, aq_payload);
+        int httpCode = httpGetWithRetry(wifi_client, server, PORT, url, [&doc](WiFiClient &stream) {
+            return deserializeJson(doc, stream);
+        });
+        if (httpCode != HTTP_CODE_OK) return httpCode;
         JsonObject aq_hourly = doc["hourly"];
         JsonArray aq_time = aq_hourly["time"];
 

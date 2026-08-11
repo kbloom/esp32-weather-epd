@@ -23,14 +23,13 @@ int OpenMeteoWithNwsAlerts::fetchWeatherData(WeatherData &data)
     String server = "api.weather.gov";
     String url = String("/alerts/active?point=")+LAT+","+LON;
 
-    String payload;
-    httpCode = httpGetWithRetry(wifi_client, server, PORT, url, payload);
+    JsonDocument doc;
+    httpCode = httpGetWithRetry(wifi_client, server, PORT, url, [&doc](WiFiClient &stream) {
+        return deserializeJson(doc, stream);
+    });
     if (httpCode != HTTP_CODE_OK) {
         return HTTP_CODE_OK;
     }
-
-    JsonDocument doc;
-    deserializeJson(doc, payload);
 
     for (JsonObject feature: doc["features"].as<JsonArray>()) {
         WeatherAlert new_alert;
