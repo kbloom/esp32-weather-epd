@@ -19,7 +19,7 @@
 
 #include "provider/OpenMeteoProvider.h"
 #include "_locale.h"
-#include "aqi.h"
+#include "client_utils.h"
 #include "display_utils.h" // For getHttpResponsePhrase
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
@@ -56,29 +56,8 @@ int OpenMeteoProvider::fetchWeatherData(WeatherData &data)
                     "&forecast_days=" + MAX_DAILY_FORECASTS +
                     "&timeformat=unixtime&timezone=auto";
 
-    int attempts = 0;
-
     String payload;
-    HTTPClient http;
-    int httpCode;
-    bool success=false;
-    do {
-        Serial.print(TXT_ATTEMPTING_HTTP_REQ);
-        Serial.println(": " + url);
-        http.begin(wifi_client, server, PORT, url, true);
-
-        httpCode = http.GET();
-        if (httpCode == HTTP_CODE_OK) {
-            success = true;
-            payload = http.getString();
-        }
-
-        // Serial.println(url);
-        // Serial.println(payload);
-        http.end();
-        Serial.println("  " + String(httpCode, DEC) + " " + getHttpResponsePhrase(httpCode));
-
-    } while (!success && attempts < 3);
+    int httpCode = httpGetWithRetry(wifi_client, server, PORT, url, payload);
     if (httpCode != HTTP_CODE_OK) {
         return httpCode;
     }
@@ -168,7 +147,6 @@ int OpenMeteoProvider::fetchWeatherData(WeatherData &data)
 
     // Fetch and fill AirQuality data
     { // Use a new scope for the second HTTP request
-        HTTPClient http;
         String server = "air-quality-api.open-meteo.com";
         String url = "/v1/air-quality?latitude=" + LAT +
                         "&longitude=" + LON +
@@ -176,13 +154,9 @@ int OpenMeteoProvider::fetchWeatherData(WeatherData &data)
                         "&past_days=1" +
                         "&timeformat=unixtime&timezone=auto";
 
-        http.begin(wifi_client, server, PORT, url, true);
-
-        int httpCode = http.GET();
+        String aq_payload;
+        int httpCode = httpGetWithRetry(wifi_client, server, PORT, url, aq_payload);
         if (httpCode != HTTP_CODE_OK) return httpCode;
-
-        String aq_payload = http.getString();
-        http.end();
 
         doc.clear(); // Clear the document before reusing
         deserializeJson(doc, aq_payload);

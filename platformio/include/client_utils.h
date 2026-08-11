@@ -17,7 +17,9 @@
 
 #pragma once
 
+#include <functional>
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include "config.h"
 #ifdef USE_HTTP
   #include <WiFiClient.h>
@@ -29,3 +31,7 @@ wl_status_t startWiFi(int &wifiRSSI);
 void killWiFi();
 bool waitForSNTPSync(tm *timeInfo);
 bool printLocalTime(tm *timeInfo);
+
+int httpGetWithRetry(WiFiClient &wifiClient, const String &host, uint16_t port, const String &uri, String &payload, const String &displayUri = "");
+int httpGetWithRetry(WiFiClient &wifiClient, const String &host, uint16_t port, const String &uri, std::function<DeserializationError(WiFiClient &stream)> deserializer, const String &displayUri = "");
+

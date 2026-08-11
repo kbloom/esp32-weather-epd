@@ -144,3 +144,83 @@ void printHeapUsage() {
   return;
 }
 
+int httpGetWithRetry(WiFiClient &wifiClient, const String &host, uint16_t port, const String &uri, String &payload, const String &displayUri)
+{
+  int attempts = 0;
+  bool rxSuccess = false;
+  int httpCode = 0;
+  String logUri = displayUri.length() > 0 ? displayUri : uri;
+
+  while (!rxSuccess && attempts < 3)
+  {
+    if (WiFi.status() != WL_CONNECTED)
+    {
+      return -512 - static_cast<int>(WiFi.status());
+    }
+
+    Serial.print(TXT_ATTEMPTING_HTTP_REQ);
+    Serial.println(": " + logUri);
+
+    HTTPClient http;
+    http.setConnectTimeout(HTTP_CLIENT_TCP_TIMEOUT);
+    http.setTimeout(HTTP_CLIENT_TCP_TIMEOUT);
+    http.begin(wifiClient, host, port, uri, true);
+
+    httpCode = http.GET();
+    if (httpCode == HTTP_CODE_OK)
+    {
+      rxSuccess = true;
+      payload = http.getString();
+    }
+
+    http.end();
+    Serial.println("  " + String(httpCode, DEC) + " " + getHttpResponsePhrase(httpCode));
+    ++attempts;
+  }
+
+  return httpCode;
+}
+
+int httpGetWithRetry(WiFiClient &wifiClient, const String &host, uint16_t port, const String &uri, std::function<DeserializationError(WiFiClient &stream)> deserializer, const String &displayUri)
+{
+  int attempts = 0;
+  bool rxSuccess = false;
+  int httpCode = 0;
+  DeserializationError jsonErr;
+  String logUri = displayUri.length() > 0 ? displayUri : uri;
+
+  while (!rxSuccess && attempts < 3)
+  {
+    if (WiFi.status() != WL_CONNECTED)
+    {
+      return -512 - static_cast<int>(WiFi.status());
+    }
+
+    Serial.print(TXT_ATTEMPTING_HTTP_REQ);
+    Serial.println(": " + logUri);
+
+    HTTPClient http;
+    http.setConnectTimeout(HTTP_CLIENT_TCP_TIMEOUT);
+    http.setTimeout(HTTP_CLIENT_TCP_TIMEOUT);
+    http.begin(wifiClient, host, port, uri, true);
+
+    httpCode = http.GET();
+    if (httpCode == HTTP_CODE_OK)
+    {
+      jsonErr = deserializer(http.getStream());
+      if (jsonErr)
+      {
+        httpCode = -256 - static_cast<int>(jsonErr.code());
+      }
+      rxSuccess = !jsonErr;
+    }
+
+    http.end();
+    Serial.println("  " + String(httpCode, DEC) + " " + getHttpResponsePhrase(httpCode));
+    ++attempts;
+  }
+
+  return httpCode;
+}
+
+

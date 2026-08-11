@@ -22,8 +22,7 @@
 #include "config.h"
 #include "conversions.h"
 #include "display_utils.h" // For getHttpResponsePhrase
-#include "aqi.h"
-
+#include "client_utils.h"
 #include <HTTPClient.h>
 
 static const String API_ENDPOINT = "api.openweathermap.org";
@@ -59,9 +58,6 @@ int OpenWeatherMapProvider::fetchWeatherData(WeatherData &data)
 
 int OpenWeatherMapProvider::fetchOneCallData(WeatherData &data)
 {
-    int attempts = 0;
-    bool rxSuccess = false;
-    DeserializationError jsonErr;
     String units = "metric";
     String uri = "/data/3.0/onecall?lat=" + LAT + "&lon=" + LON + "&lang=" + LANGUAGE + "&units=" + units + "&exclude=minutely";
 #if DISPLAY_ALERTS
@@ -71,48 +67,13 @@ int OpenWeatherMapProvider::fetchOneCallData(WeatherData &data)
     String sanitizedUri = API_ENDPOINT + uri + "&appid={API key}";
     uri += "&appid=" + APIKEY;
 
-    Serial.print(TXT_ATTEMPTING_HTTP_REQ);
-    Serial.println(": " + sanitizedUri);
-    int httpResponse = 0;
-
-    while (!rxSuccess && attempts < 3)
-    {
-        if (WiFi.status() != WL_CONNECTED)
-        {
-            return -512 - static_cast<int>(WiFi.status());
-        }
-
-        HTTPClient http;
-        http.setConnectTimeout(HTTP_CLIENT_TCP_TIMEOUT);
-        http.setTimeout(HTTP_CLIENT_TCP_TIMEOUT);
-
-        http.begin(wifi_client, API_ENDPOINT, PORT, uri);
-
-        httpResponse = http.GET();
-        if (httpResponse == HTTP_CODE_OK)
-        {
-            jsonErr = deserializeOneCall(http.getStream(), data);
-            if (jsonErr)
-            {
-                httpResponse = -256 - static_cast<int>(jsonErr.code());
-            }
-            rxSuccess = !jsonErr;
-        }
-
-        http.end();
-        Serial.println("  " + String(httpResponse, DEC) + " " + getHttpResponsePhrase(httpResponse));
-        ++attempts;
-    }
-
-    return httpResponse;
+    return httpGetWithRetry(wifi_client, API_ENDPOINT, PORT, uri, [this, &data](WiFiClient &stream) {
+        return deserializeOneCall(stream, data);
+    }, sanitizedUri);
 }
 
 int OpenWeatherMapProvider::fetchAirPollutionData(WeatherData &data)
 {
-    int attempts = 0;
-    bool rxSuccess = false;
-    DeserializationError jsonErr;
-
     time_t now;
     int64_t end = time(&now);
     int64_t start = end - ((3600 * AIR_POLLUTION_HISTORY_HOURS) - 1); // 24 hours of data
@@ -125,40 +86,9 @@ int OpenWeatherMapProvider::fetchAirPollutionData(WeatherData &data)
     String sanitizedUri = API_ENDPOINT + uri + "&appid={API key}";
     uri += "&appid=" + APIKEY;
 
-    Serial.print(TXT_ATTEMPTING_HTTP_REQ);
-    Serial.println(": " + sanitizedUri);
-    int httpResponse = 0;
-
-    while (!rxSuccess && attempts < 3)
-    {
-        if (WiFi.status() != WL_CONNECTED)
-        {
-            return -512 - static_cast<int>(WiFi.status());
-        }
-
-        HTTPClient http;
-        http.setConnectTimeout(HTTP_CLIENT_TCP_TIMEOUT);
-        http.setTimeout(HTTP_CLIENT_TCP_TIMEOUT);
-
-        http.begin(wifi_client, API_ENDPOINT, PORT, uri);
-
-        httpResponse = http.GET();
-        if (httpResponse == HTTP_CODE_OK)
-        {
-            jsonErr = deserializeAirQuality(http.getStream(), data);
-            if (jsonErr)
-            {
-                httpResponse = -256 - static_cast<int>(jsonErr.code());
-            }
-            rxSuccess = !jsonErr;
-        }
-
-        http.end();
-        Serial.println("  " + String(httpResponse, DEC) + " " + getHttpResponsePhrase(httpResponse));
-        ++attempts;
-    }
-
-    return httpResponse;
+    return httpGetWithRetry(wifi_client, API_ENDPOINT, PORT, uri, [this, &data](WiFiClient &stream) {
+        return deserializeAirQuality(stream, data);
+    }, sanitizedUri);
 }
 
 DeserializationError OpenWeatherMapProvider::deserializeOneCall(WiFiClient &json, WeatherData &data)
