@@ -49,7 +49,7 @@ int OpenMeteoProvider::fetchWeatherData(WeatherData &data)
                     "latitude=" + LAT + "&longitude=" + LON +
                     "&current=temperature_2m,apparent_temperature,relativehumidity_2m,surface_pressure,windspeed_10m,winddirection_10m,windgusts_10m,weathercode,visibility,cloud_cover" +
                     "&hourly=weathercode,temperature_2m,precipitation_probability,rain,snowfall,cloudcover,windspeed_10m,windgusts_10m" +
-                    "&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,rain_sum,snowfall_sum,precipitation_probability_max,windspeed_10m_max,windgusts_10m_max" +
+                    "&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,rain_sum,snowfall_sum,precipitation_probability_max,windspeed_10m_max,windgusts_10m_max,uv_index_max" +
                     "&temperature_unit=" + temperature_unit +
                     "&wind_speed_unit=" + wind_speed_unit +
                     "&precipitation_unit=" + precipitation_unit +
@@ -77,7 +77,7 @@ int OpenMeteoProvider::fetchWeatherData(WeatherData &data)
     data.current.wind_deg = current["winddirection_10m"];
     data.current.wind_speed = current["windspeed_10m"];
     data.current.wind_gust = current["windgusts_10m"];
-    // data.current.uvi = daily["uv_index"][0];
+    data.current.uvi = daily["uv_index_max"][0];
     data.current.pressure = current["surface_pressure"];
     data.current.visibility = current["visibility"];
     data.current.cloudiness = current["cloud_cover"];
@@ -151,6 +151,7 @@ int OpenMeteoProvider::fetchWeatherData(WeatherData &data)
         String url = "/v1/air-quality?latitude=" + LAT +
                         "&longitude=" + LON +
                         "&hourly=carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,pm2_5,pm10,ammonia" +
+                        "&current=uv_index" +
                         "&past_days=1" +
                         "&timeformat=unixtime&timezone=auto";
 
@@ -161,10 +162,9 @@ int OpenMeteoProvider::fetchWeatherData(WeatherData &data)
         doc.clear(); // Clear the document before reusing
         deserializeJson(doc, aq_payload);
         JsonObject aq_hourly = doc["hourly"];
-        JsonObject aq_current = doc["current"];
         JsonArray aq_time = aq_hourly["time"];
 
-        data.current.uvi = aq_current["uv_index"];
+        //data.current.uvi = doc["current"]["uv_index"];
 
         // Find the starting index for the air quality data.
         // Find the last hourly timestamp that is less than or equal to the current time.
